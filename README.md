@@ -55,7 +55,7 @@ mvn test
 - La nota de regalo admite máximo 140 caracteres.
 - El pedido debe tener al menos un ítem y el país debe ser soportado.
 
-Todas estas reglas viven en un solo lugar: `Pedido.Builder.build()` (método privado `validar()`), que lanza `IllegalArgumentException` (traducida a **400** por `ManejadorErrores`). Como el constructor de `Pedido` es privado y no tiene setters, **no existe un `Pedido` inválido ni a medias**. El precio de cada `ItemPedido` se toma del catálogo, no del cliente.
+Todas estas reglas viven en un solo lugar: `Pedido.Builder.build()` (método privado `validar()`), que lanza `IllegalArgumentException`. Como el constructor de `Pedido` es privado y no tiene setters, **no existe un `Pedido` inválido ni a medias**. El precio de cada `ItemPedido` se toma del catálogo, no del cliente.
 
 **Participantes GoF → clases:**
 
