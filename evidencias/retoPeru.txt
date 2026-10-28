@@ -1,0 +1,8 @@
+git diff --stat
+ .../facturacion/peru/CalculadoraImpuestosPeru.java | 20 ++++++++++++++
+ .../shopflow/facturacion/peru/FabricaPeru.java     | 32 ++++++++++++++++++++++
+ .../facturacion/peru/GeneradorComprobantePeru.java | 18 ++++++++++++
+ .../peru/ValidadorIdentificacionPeru.java          | 17 ++++++++++++
+ .../edu/unbosque/shopflow/PedidoBuilderTest.java   | 32 ++++++++++++++++++++++
+ .../unbosque/shopflow/ServicioFacturacionTest.java | 31 +++++++++++++++++++++
+ 6 files changed, 150 insertions(+)
