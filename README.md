@@ -6,9 +6,9 @@
 
 | Integrante | Rol | Patrones a cargo | Reto de extensión |
 |---|---|---|---|
-| Valentina Tamayo Ruiz | A | Builder y Abstract Factory | A · Perú (Abstract Factory) |
-| Ricardo Andrés Cobarrubia | B | Adapter y Decorator | B · Métricas (Decorator) |
-| Daniel Andrés Medina Castrillon | C | Proxy y Factory Method | C · WhatsApp (Factory Method) |
+| Valentina Tamayo Ruiz | A | Builder y Abstract Factory | Perú (Abstract Factory) |
+| Ricardo Andrés Cobarrubia | B | Adapter y Decorator | Métricas (Decorator) |
+| Daniel Andrés Medina Castrillon | C | Proxy y Factory Method | WhatsApp (Factory Method) |
 
 ### Cómo ejecutar el proyecto
 
@@ -115,7 +115,7 @@ Si un pedido mexicano se validara con reglas colombianas, la factura quedaría m
 
 Los retos comprueban que el diseño está abierto a la extensión y cerrado a la modificación. La evidencia es la salida de `git diff --stat` del commit del reto, que debe mostrar solo archivos nuevos (salvo la excepción indicada para cada reto).
 
-### Reto A · Perú (Abstract Factory) 
+### Reto A Perú (Abstract Factory) 
 
 **Qué se hizo.** Se agregó `FabricaPeru` con IGV del 18 %, RUC de 11 dígitos (también se acepta DNI de 8) y comprobante de la SUNAT. Un pedido con `"pais": "PE"` se factura correctamente. Solo se crearon archivos nuevos en el paquete `facturacion.peru`:
 
@@ -138,11 +138,11 @@ Los retos comprueban que el diseño está abierto a la extensión y cerrado a la
  6 files changed, 150 insertions(+)
 ```
 
-### Reto B · Métricas (Decorator) 
+### Reto B Métricas (Decorator) 
 
 **PENDIENTE:** 
 
-### Reto C · WhatsApp (Factory Method) 
+### Reto C WhatsApp (Factory Method) 
 
 **PENDIENTE:**
 
@@ -155,13 +155,13 @@ Los retos comprueban que el diseño está abierto a la extensión y cerrado a la
 Sin el patrón de Abstract Factory, la facturación necesitaría un condicional por país para cada pieza de la familia. Serían al menos tres bloques: uno para elegir el porcentaje de impuesto y calcularlo, otro para validar el documento y otro para generar el comprobante, cada uno con una rama por país.
 Con dos países ya son 3 condicionales de 2 ramas. Para abrir Perú habría que editar cada uno de esos 3 condicionales (agregar una rama `PE`) en la clase que factura, y en cualquier otra clase que repita el `if`. Además nada impediría mezclar, por ejemplo, el IVA de un país con el comprobante de otro. Con el patrón, abrir Perú fue agregar 4 clases nuevas y 0 modificaciones.
 
-**Parte de Factory Method (WhatsApp).** **PENDIENTE**
+**Parte de Factory Method** **PENDIENTE**
 
 ### 2. ¿Por qué las notificaciones usan Factory Method y la facturación usa Abstract Factory? (producto vs. familia de productos)
 
 La facturación necesita crear una familia de productos relacionados: calculadora de impuestos, validador de identificación y generador de comprobante. Estas tres piezas deben ser del mismo país; si se mezclan, la factura queda mal. Por eso se usa Abstract Factory: el cliente (`ServicioFacturacion`) recibe un objeto fábrica (composición) y todo lo que le pide a esa fábrica es coherente entre sí. La consistencia queda garantizada por el diseño y no por la disciplina del programador.
 
-**Parte de Factory Method (notificaciones).** **PENDIENTE** 
+**Parte de Factory Method** **PENDIENTE** 
 
 ### 3. Invertir el orden de los decoradores (reintento por fuera de la auditoría) y pagar cinco pedidos con LegacyPay. ¿Qué cambia en `GET /api/pagos/auditoria`? ¿Qué orden conviene y por qué?
 
@@ -200,5 +200,8 @@ La facturación necesita crear una familia de productos relacionados: calculador
 
 ### Conclusiones del grupo
 
+**PENDIENTE** 
 
 ### Dificultades encontradas
+
+**PENDIENTE** 
