@@ -48,7 +48,7 @@ mvn test
 
 ### 3.1 Builder
 
-**Problema que resuelve en ShopFlow.** Crear un `Pedido` válido con 4 datos obligatorios (cliente, país, documento y contacto), al menos un ítem y seis opciones. Algunas reglas dependen de varias opciones a la vez:
+**Problema que resuelve en ShopFlow:** Crear un `Pedido` válido con 4 datos obligatorios (cliente, país, documento y contacto), al menos un ítem y seis opciones. Algunas reglas dependen de varias opciones a la vez:
 
 - La dirección de envío es obligatoria si el pedido **no** se recoge en tienda.
 - Un pedido para recoger en tienda **no** puede ser express.
@@ -70,7 +70,7 @@ Todas estas reglas viven en un solo lugar: `Pedido.Builder.build()` (método pri
 
 ### 3.2 Abstract Factory
 
-**Problema que resuelve en ShopFlow.** Cada país exige una **familia** de objetos que deben ir juntos:
+**Problema que resuelve en ShopFlow:** Cada país exige una **familia** de objetos que deben ir juntos:
 
 | País | Impuesto | Documento del cliente | Comprobante |
 |---|---|---|---|
