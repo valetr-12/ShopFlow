@@ -113,18 +113,16 @@ Si un pedido mexicano se validara con reglas colombianas, la factura quedaría m
 
 ## Sección 4. Retos de extensión
 
-Los retos comprueban que el diseño está abierto a la extensión y cerrado a la modificación. La evidencia es la salida de `git diff --stat` del commit del reto, que debe mostrar solo archivos nuevos (salvo la excepción indicada para cada reto).
-
 ### Reto A Perú (Abstract Factory) 
 
-**Qué se hizo.** Se agregó `FabricaPeru` con IGV del 18 %, RUC de 11 dígitos (también se acepta DNI de 8) y comprobante de la SUNAT. Un pedido con `"pais": "PE"` se factura correctamente. Solo se crearon archivos nuevos en el paquete `facturacion.peru`:
+**Qué se hizo:** Se agregó `FabricaPeru` con IGV del 18 %, RUC de 11 dígitos (también se acepta DNI de 8) y comprobante de la SUNAT. Un pedido con `"pais": "PE"` se factura correctamente. Solo se crearon archivos nuevos en el paquete `facturacion.peru`:
 
 - `FabricaPeru` (`@Component`)
 - `CalculadoraImpuestosPeru`
 - `ValidadorIdentificacionPeru`
 - `GeneradorComprobantePeru`
 
-**Por qué no hizo falta modificar nada.** `ServicioFacturacion` recibe `List<FabricaFacturacion>`: Spring inyecta automáticamente toda fábrica anotada con `@Component`, y el servicio la registra por el código que devuelve `pais()`. `Pedido.Builder` ya acepta `PE` como país. No se editó ninguna clase existente.
+**Por qué no hizo falta modificar nada:** `ServicioFacturacion` recibe `List<FabricaFacturacion>`: Spring inyecta automáticamente toda fábrica anotada con `@Component`, y el servicio la registra por el código que devuelve `pais()`. `Pedido.Builder` ya acepta `PE` como país. No se editó ninguna clase existente.
 
 **Evidencia (`git diff --stat`).** Guardada en `evidencias/retoPeru.txt`. 
 
