@@ -16,6 +16,10 @@ public class QuickPayAdapter implements PasarelaDePago {
     public QuickPayAdapter(QuickPaySdk sdk) {
         this.sdk = sdk;
     }
+    
+    public QuickPayAdapter() {
+        this(new QuickPaySdk());
+    }
 
     @Override
     public ResultadoPago cobrar(BigDecimal montoUsd, String referencia) {

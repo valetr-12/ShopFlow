@@ -19,6 +19,10 @@ public class LegacyPayAdapter implements PasarelaDePago {
         this.cliente = cliente;
     }
 
+    public LegacyPayAdapter(double probabilidadTimeout) {
+        this(new LegacyPayClient(probabilidadTimeout));
+    }
+    
     @Override
     public ResultadoPago cobrar(BigDecimal montoUsd, String referencia) {
         long centavos = montoUsd.movePointRight(2)

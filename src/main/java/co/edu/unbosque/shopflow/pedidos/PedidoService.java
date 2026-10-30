@@ -4,11 +4,16 @@ import co.edu.unbosque.shopflow.catalogo.Producto;
 import co.edu.unbosque.shopflow.catalogo.ServicioCatalogo;
 import co.edu.unbosque.shopflow.facturacion.Comprobante;
 import co.edu.unbosque.shopflow.facturacion.ServicioFacturacion;
+import co.edu.unbosque.shopflow.pagos.PasarelaDePago;
+import co.edu.unbosque.shopflow.pagos.PasarelasDisponibles;
+import co.edu.unbosque.shopflow.pagos.ResultadoPago;
 
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,14 +24,19 @@ public class PedidoService {
 
 	private final ServicioCatalogo catalogo;
 	private final ServicioFacturacion servicioFacturacion;
+	private final PasarelasDisponibles pasarelas;
 
 	private final Map<String, Pedido> pedidos = new ConcurrentHashMap<>();
+	private final Map<String, Comprobante> comprobantes = new ConcurrentHashMap<>();
+	private final Map<String, PagoResponse> pagos = new ConcurrentHashMap<>();
 	private final AtomicLong contador = new AtomicLong(0);
 
-	public PedidoService(ServicioCatalogo catalogo, ServicioFacturacion servicioFacturacion) {
+	public PedidoService(ServicioCatalogo catalogo, ServicioFacturacion servicioFacturacion,
+			PasarelasDisponibles pasarelas) {
 
 		this.catalogo = catalogo;
 		this.servicioFacturacion = servicioFacturacion;
+		this.pasarelas = pasarelas;
 	}
 
 	public PedidoCreadoResponse crear(PedidoRequest request) {
@@ -52,9 +62,6 @@ public class PedidoService {
 					throw new IllegalArgumentException("La cantidad debe ser mayor que cero");
 				}
 
-				// Consulta el catálogo real.
-				// Si el SKU no existe, CatalogoRemoto lanza
-				// NoSuchElementException.
 				Producto producto = catalogo.buscar(item.sku());
 
 				ItemPedido itemPedido = new ItemPedido(producto.sku(), producto.nombre(), item.cantidad(),
@@ -73,9 +80,8 @@ public class PedidoService {
 
 		Comprobante comprobante = servicioFacturacion.facturar(pedido);
 
-		// Solo se guarda el pedido si la facturación y
-		// la validación de identificación fueron exitosas.
 		pedidos.put(pedido.getId(), pedido);
+		comprobantes.put(pedido.getId(), comprobante);
 
 		return new PedidoCreadoResponse(pedido, comprobante);
 	}
@@ -89,5 +95,30 @@ public class PedidoService {
 		}
 
 		return pedido;
+	}
+
+	public PagoResponse pagar(String pedidoId, String proveedor) {
+
+		buscar(pedidoId);                                             
+
+		if (pagos.containsKey(pedidoId)) {
+			throw new IllegalStateException("El pedido " + pedidoId + " ya fue pagado");   
+		}
+
+		PasarelaDePago pasarela = pasarelas.obtener(proveedor);       
+
+		BigDecimal total = comprobantes.get(pedidoId).total();
+
+		ResultadoPago resultado = pasarela.cobrar(total, pedidoId);   
+
+		if (!resultado.aprobado()) {
+			throw new IllegalStateException(resultado.mensaje());    
+		}
+
+		PagoResponse pago = new PagoResponse(pedidoId, "PAGADO", proveedor.trim().toUpperCase(Locale.ROOT),
+				total, resultado.autorizacion());
+		pagos.put(pedidoId, pago);
+
+		return pago;
 	}
 }
