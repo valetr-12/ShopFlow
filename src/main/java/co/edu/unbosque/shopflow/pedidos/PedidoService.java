@@ -4,11 +4,15 @@ import co.edu.unbosque.shopflow.catalogo.Producto;
 import co.edu.unbosque.shopflow.catalogo.ServicioCatalogo;
 import co.edu.unbosque.shopflow.facturacion.Comprobante;
 import co.edu.unbosque.shopflow.facturacion.ServicioFacturacion;
+import co.edu.unbosque.shopflow.notificaciones.Notificador;
 
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,20 +23,32 @@ public class PedidoService {
 
 	private final ServicioCatalogo catalogo;
 	private final ServicioFacturacion servicioFacturacion;
+	private final Map<String, Notificador> notificadores = new HashMap<>();
 
 	private final Map<String, Pedido> pedidos = new ConcurrentHashMap<>();
 	private final AtomicLong contador = new AtomicLong(0);
 
-	public PedidoService(ServicioCatalogo catalogo, ServicioFacturacion servicioFacturacion) {
+	public PedidoService(ServicioCatalogo catalogo, ServicioFacturacion servicioFacturacion,
+			List<Notificador> notificadoresDisponibles) {
 
 		this.catalogo = catalogo;
 		this.servicioFacturacion = servicioFacturacion;
+
+		for (Notificador notificador : notificadoresDisponibles) {
+			String canal = notificador.canal().toUpperCase(Locale.ROOT);
+
+			this.notificadores.put(canal, notificador);
+		}
 	}
 
 	public PedidoCreadoResponse crear(PedidoRequest request) {
 
 		if (request == null) {
 			throw new IllegalArgumentException("Los datos del pedido son obligatorios");
+		}
+
+		if (request.canalNotificacion() != null) {
+			notificadorPara(request.canalNotificacion());
 		}
 
 		List<ItemPedido> items = new ArrayList<>();
@@ -52,9 +68,6 @@ public class PedidoService {
 					throw new IllegalArgumentException("La cantidad debe ser mayor que cero");
 				}
 
-				// Consulta el catálogo real.
-				// Si el SKU no existe, CatalogoRemoto lanza
-				// NoSuchElementException.
 				Producto producto = catalogo.buscar(item.sku());
 
 				ItemPedido itemPedido = new ItemPedido(producto.sku(), producto.nombre(), item.cantidad(),
@@ -73,8 +86,6 @@ public class PedidoService {
 
 		Comprobante comprobante = servicioFacturacion.facturar(pedido);
 
-		// Solo se guarda el pedido si la facturación y
-		// la validación de identificación fueron exitosas.
 		pedidos.put(pedido.getId(), pedido);
 
 		return new PedidoCreadoResponse(pedido, comprobante);
@@ -89,5 +100,23 @@ public class PedidoService {
 		}
 
 		return pedido;
+	}
+
+	public void notificarPagoAprobado(Pedido pedido, BigDecimal totalPagado) {
+
+		notificadorPara(pedido.getCanalNotificacion()).notificarPagoAprobado(pedido.getContacto(), pedido.getId(),
+				totalPagado);
+	}
+
+	private Notificador notificadorPara(String canal) {
+
+		String clave = canal == null ? "" : canal.trim().toUpperCase(Locale.ROOT);
+		Notificador notificador = notificadores.get(clave);
+
+		if (notificador == null) {
+			throw new IllegalArgumentException("Canal de notificación no soportado: " + canal);
+		}
+
+		return notificador;
 	}
 }
