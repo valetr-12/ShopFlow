@@ -1,0 +1,3 @@
+ .../shopflow/pagos/ConfiguracionPagos.java         | 16 ++++++-----
+ .../edu/unbosque/shopflow/pagos/MetricasPago.java  | 32 ++++++++++++++++++++++
+ 2 files changed, 41 insertions(+), 7 deletions(-)
