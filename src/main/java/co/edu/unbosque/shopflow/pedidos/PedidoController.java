@@ -29,4 +29,13 @@ public class PedidoController {
 
 		return ResponseEntity.ok(pedido);
 	}
+	
+	@PostMapping("/{id}/pago")
+	public ResponseEntity<PagoResponse> pagar(@PathVariable String id, @RequestBody PagoRequest request) {
+
+		PagoResponse pago = pedidoService.pagar(id, request == null ? null : request.proveedor());
+
+		return ResponseEntity.ok(pago);
+	}
+	
 }
