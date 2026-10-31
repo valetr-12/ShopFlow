@@ -7,10 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Punto de composición de los pagos: el único lugar que conoce las clases concretas.
- * Construye cada adapter y lo envuelve en decoradores según application.properties.
- */
 @Configuration
 public class ConfiguracionPagos {
 
@@ -25,6 +21,9 @@ public class ConfiguracionPagos {
 
     @Value("${shopflow.pagos.auditoria:true}")
     private boolean auditoria;
+    
+    @Value("${shopflow.pagos.metricas:true}")
+    private boolean metricas;
 
     @Bean
     public PasarelasDisponibles pasarelasDisponibles(RegistroAuditoria registro) {
@@ -34,14 +33,17 @@ public class ConfiguracionPagos {
         return new PasarelasDisponibles(pasarelas);
     }
 
-    /** Envuelve el adapter en capas. Orden: Auditoria( Reintento( Adapter ) ). */
+
     private PasarelaDePago armar(String proveedor, PasarelaDePago adapter, RegistroAuditoria registro) {
         PasarelaDePago pasarela = adapter;
         if (reintentos) {
-            pasarela = new ReintentoPago(pasarela, maxIntentos);          // capa interna
+            pasarela = new ReintentoPago(pasarela, maxIntentos);        
         }
         if (auditoria) {
-            pasarela = new AuditoriaPago(pasarela, proveedor, registro);  // capa externa
+            pasarela = new AuditoriaPago(pasarela, proveedor, registro);  
+        }
+        if (metricas) {
+            pasarela = new MetricasPago(pasarela, proveedor);            
         }
         return pasarela;
     }
