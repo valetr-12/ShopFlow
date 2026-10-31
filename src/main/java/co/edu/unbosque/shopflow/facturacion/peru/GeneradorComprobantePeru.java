@@ -12,7 +12,7 @@ public class GeneradorComprobantePeru implements GeneradorComprobante {
 	@Override
 	public Comprobante generar(Pedido pedido, BigDecimal baseImponible, BigDecimal valorIva, BigDecimal total) {
 
-		return new Comprobante("SUNAT-" + UUID.randomUUID(), pedido.getId(), "PE", "Factura electrónica", "SUNAT",
+		return new Comprobante("SUNAT-" + UUID.randomUUID(), pedido.getId(), "PE", "Factura electrónica (SUNAT)", "SUNAT",
 				pedido.getDocumentoCliente(), baseImponible, new BigDecimal("18"), valorIva, total);
 	}
 }

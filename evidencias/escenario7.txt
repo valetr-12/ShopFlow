@@ -1,0 +1,26 @@
+# Escenario 7 - Pedido de 2 portátiles (PED-2) pagado con LegacyPay y luego con QuickPay
+# Esperado: 409 «Fondos insuficientes»; luego 200
+
+## Creación del pedido
+HTTP/1.1 201 
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 31 Oct 2026 04:05:11 GMT
+
+{"pedido":{"id":"PED-2","clienteId":"CLI-006","documentoCliente":"1020304050","pais":"CO","contacto":"3001234567","items":[{"sku":"SKU-004","nombre":"Portátil 14 pulgadas","cantidad":2,"precioUnitario":1450.00}],"direccionEnvio":"Carrera 7 # 40-62, Bogotá","recogerEnTienda":false,"cupon":null,"notaRegalo":null,"envioExpress":false,"canalNotificacion":"SMS","subtotal":2900.00,"descuento":0},"comprobante":{"numero":"DIAN-ad846b9c-a44f-4414-861c-975b3f03f986","pedidoId":"PED-2","pais":"CO","tipo":"Factura electrónica (DIAN)","autoridad":"DIAN","identificacionCliente":"1020304050","baseImponible":2900.00,"porcentajeIva":19,"valorIva":551.00,"total":3451.00}}
+
+## Pago con LegacyPay
+HTTP/1.1 409 
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 31 Oct 2026 04:05:12 GMT
+
+{"error":"Fondos insuficientes"}
+
+## Pago con QuickPay
+HTTP/1.1 200 
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 31 Oct 2026 04:05:12 GMT
+
+{"pedidoId":"PED-2","estado":"PAGADO","proveedor":"QUICKPAY","montoPagado":3451.00,"autorizacion":"QP-7e0a271b"}

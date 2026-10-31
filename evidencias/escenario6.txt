@@ -1,0 +1,18 @@
+# Escenario 6 - Pagar el pedido del escenario 3 (PED-1, ejemplo B.2) con LegacyPay y luego otra vez
+# Esperado: 200 con estado PAGADO; luego 409
+
+## Primer pago
+HTTP/1.1 200 
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 31 Oct 2026 04:05:09 GMT
+
+{"pedidoId":"PED-1","estado":"PAGADO","proveedor":"LEGACYPAY","montoPagado":145.66,"autorizacion":"LP4051"}
+
+## Segundo pago
+HTTP/1.1 409 
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 31 Oct 2026 04:05:10 GMT
+
+{"error":"El pedido PED-1 ya fue pagado"}

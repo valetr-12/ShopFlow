@@ -1,0 +1,7 @@
+# Escenario 1 - Caché del proxy: GET /api/productos/SKU-003 dos veces
+# Esperado: primera ≈ 1,5 s; segunda < 0,05 s
+
+Primera consulta (segundos):
+1.550608
+Segunda consulta (segundos):
+0.004311

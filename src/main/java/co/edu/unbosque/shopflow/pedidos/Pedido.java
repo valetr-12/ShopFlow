@@ -1,6 +1,7 @@
 package co.edu.unbosque.shopflow.pedidos;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import java.util.List;
 
@@ -44,7 +45,7 @@ public final class Pedido {
 
 	private BigDecimal calcularDescuento() {
 		if ("BOSQUE10".equalsIgnoreCase(cupon)) {
-			return subtotal.multiply(new BigDecimal("0.10"));
+			return subtotal.multiply(new BigDecimal("0.10")).setScale(2, RoundingMode.HALF_UP);
 		}
 
 		return BigDecimal.ZERO;
@@ -137,10 +138,6 @@ public final class Pedido {
 				throw new IllegalArgumentException("Un pedido para recoger en tienda no puede tener envío express");
 			}
 			
-			if (!recogerEnTienda && !envioExpress) {
-				throw new IllegalArgumentException("Debe escoger un método de entrega");
-			}
-
 			if (notaRegalo != null && notaRegalo.length() > 140) {
 				throw new IllegalArgumentException("La nota de regalo no puede superar los 140 caracteres");
 			}

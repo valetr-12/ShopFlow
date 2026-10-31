@@ -12,7 +12,7 @@ public class GeneradorComprobanteMexico implements GeneradorComprobante {
 	@Override
 	public Comprobante generar(Pedido pedido, BigDecimal baseImponible, BigDecimal valorIva, BigDecimal total) {
 
-		return new Comprobante("CFDI-" + UUID.randomUUID(), pedido.getId(), "MX", "Comprobante fiscal digital (CFDI)",
+		return new Comprobante("CFDI-" + UUID.randomUUID(), pedido.getId(), "MX", "CFDI (SAT)",
 				"SAT", pedido.getDocumentoCliente(), baseImponible, new BigDecimal("16"), valorIva, total);
 	}
 }

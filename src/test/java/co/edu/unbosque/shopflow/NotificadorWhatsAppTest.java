@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +16,7 @@ import co.edu.unbosque.shopflow.notificaciones.BandejaNotificaciones;
 import co.edu.unbosque.shopflow.notificaciones.NotificadorEmail;
 import co.edu.unbosque.shopflow.notificaciones.NotificadorSms;
 import co.edu.unbosque.shopflow.notificaciones.NotificadorWhatsApp;
+import co.edu.unbosque.shopflow.pagos.PasarelasDisponibles;
 import co.edu.unbosque.shopflow.pedidos.PedidoCreadoResponse;
 import co.edu.unbosque.shopflow.pedidos.PedidoRequest;
 import co.edu.unbosque.shopflow.pedidos.PedidoService;
@@ -47,7 +49,8 @@ class NotificadorWhatsAppTest {
 	void unPedidoConCanalWhatsAppSeNotificaSinModificarPedidoService() {
 		BandejaNotificaciones bandeja = new BandejaNotificaciones();
 		PedidoService servicio = new PedidoService(new CatalogoFalso(),
-				new ServicioFacturacion(List.of(new FabricaColombia())), List.of(new NotificadorEmail(bandeja),
+				new ServicioFacturacion(List.of(new FabricaColombia())), new PasarelasDisponibles(Map.of()),
+				List.of(new NotificadorEmail(bandeja),
 						new NotificadorSms(bandeja), new NotificadorWhatsApp(bandeja)));
 
 		PedidoCreadoResponse creado = servicio.crear(new PedidoRequest("CLI-001", "1020304050", "CO", "+573001234567",

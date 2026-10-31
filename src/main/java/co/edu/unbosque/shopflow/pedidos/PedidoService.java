@@ -4,6 +4,7 @@ import co.edu.unbosque.shopflow.catalogo.Producto;
 import co.edu.unbosque.shopflow.catalogo.ServicioCatalogo;
 import co.edu.unbosque.shopflow.facturacion.Comprobante;
 import co.edu.unbosque.shopflow.facturacion.ServicioFacturacion;
+import co.edu.unbosque.shopflow.notificaciones.Notificador;
 import co.edu.unbosque.shopflow.pagos.PasarelaDePago;
 import co.edu.unbosque.shopflow.pagos.PasarelasDisponibles;
 import co.edu.unbosque.shopflow.pagos.ResultadoPago;
@@ -26,6 +27,7 @@ public class PedidoService {
 	private final ServicioCatalogo catalogo;
 	private final ServicioFacturacion servicioFacturacion;
 	private final PasarelasDisponibles pasarelas;
+	private final Map<String, Notificador> notificadores = new HashMap<>();
 
 	private final Map<String, Pedido> pedidos = new ConcurrentHashMap<>();
 	private final Map<String, Comprobante> comprobantes = new ConcurrentHashMap<>();
@@ -33,11 +35,17 @@ public class PedidoService {
 	private final AtomicLong contador = new AtomicLong(0);
 
 	public PedidoService(ServicioCatalogo catalogo, ServicioFacturacion servicioFacturacion,
-			PasarelasDisponibles pasarelas) {
+			PasarelasDisponibles pasarelas, List<Notificador> notificadoresDisponibles) {
 
 		this.catalogo = catalogo;
 		this.servicioFacturacion = servicioFacturacion;
 		this.pasarelas = pasarelas;
+
+		for (Notificador notificador : notificadoresDisponibles) {
+			String canal = notificador.canal().toUpperCase(Locale.ROOT);
+
+			this.notificadores.put(canal, notificador);
+		}
 	}
 
 	public PedidoCreadoResponse crear(PedidoRequest request) {
@@ -102,6 +110,37 @@ public class PedidoService {
 		return pedido;
 	}
 
+	/**
+	 * Cobra el total del comprobante con el proveedor elegido (Adapter + Decorator)
+	 * y, si el pago se aprueba, notifica al cliente por su canal (Factory Method).
+	 */
+	public PagoResponse pagar(String pedidoId, String proveedor) {
+
+		Pedido pedido = buscar(pedidoId);                              // 404 si no existe
+
+		if (pagos.containsKey(pedidoId)) {
+			throw new IllegalStateException("El pedido " + pedidoId + " ya fue pagado");   // 409
+		}
+
+		PasarelaDePago pasarela = pasarelas.obtener(proveedor);        // 400 si el proveedor no existe
+
+		BigDecimal total = comprobantes.get(pedidoId).total();
+
+		ResultadoPago resultado = pasarela.cobrar(total, pedidoId);    // 503 si la pasarela sigue caída
+
+		if (!resultado.aprobado()) {
+			throw new IllegalStateException(resultado.mensaje());      // 409, ej. "Fondos insuficientes"
+		}
+
+		PagoResponse pago = new PagoResponse(pedidoId, "PAGADO", proveedor.trim().toUpperCase(Locale.ROOT),
+				total, resultado.autorizacion());
+		pagos.put(pedidoId, pago);
+
+		notificarPagoAprobado(pedido, total);                          // Factory Method
+
+		return pago;
+	}
+
 	public void notificarPagoAprobado(Pedido pedido, BigDecimal totalPagado) {
 
 		notificadorPara(pedido.getCanalNotificacion()).notificarPagoAprobado(pedido.getContacto(), pedido.getId(),
@@ -120,29 +159,3 @@ public class PedidoService {
 		return notificador;
 	}
 }
-	public PagoResponse pagar(String pedidoId, String proveedor) {
-
-		buscar(pedidoId);                                             
-
-		if (pagos.containsKey(pedidoId)) {
-			throw new IllegalStateException("El pedido " + pedidoId + " ya fue pagado");   
-		}
-
-		PasarelaDePago pasarela = pasarelas.obtener(proveedor);       
-
-		BigDecimal total = comprobantes.get(pedidoId).total();
-
-		ResultadoPago resultado = pasarela.cobrar(total, pedidoId);   
-
-		if (!resultado.aprobado()) {
-			throw new IllegalStateException(resultado.mensaje());    
-		}
-
-		PagoResponse pago = new PagoResponse(pedidoId, "PAGADO", proveedor.trim().toUpperCase(Locale.ROOT),
-				total, resultado.autorizacion());
-		pagos.put(pedidoId, pago);
-
-		return pago;
-	}
-}
-

@@ -1,0 +1,8 @@
+# Escenario 8 - Auditoría y notificaciones
+# Esperado: una entrada de auditoría por cobro; una notificación por pago aprobado, en el canal del pedido
+
+## GET /api/pagos/auditoria
+[{"proveedor":"LEGACYPAY","referencia":"PED-1","monto":145.66,"resultado":"APROBADO","duracionMs":627,"fecha":"2026-10-30T23:05:09.9360659"},{"proveedor":"LEGACYPAY","referencia":"PED-2","monto":3451.00,"resultado":"RECHAZADO: Fondos insuficientes","duracionMs":626,"fecha":"2026-10-30T23:05:12.6277111"},{"proveedor":"QUICKPAY","referencia":"PED-2","monto":3451.00,"resultado":"APROBADO","duracionMs":2,"fecha":"2026-10-30T23:05:12.7348383"}]
+
+## GET /api/notificaciones
+[{"canal":"EMAIL","destino":"ana.perez@correo.com","mensaje":"Asunto: Pago aprobado en ShopFlow | Tu pago del pedido PED-1 por USD 145.66 fue aprobado.","fecha":"2026-10-30T23:05:09.9448793"},{"canal":"SMS","destino":"3001234567","mensaje":"Tu pago del pedido PED-2 por USD 3451.00 fue aprobado.","fecha":"2026-10-30T23:05:12.7358459"}]

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,8 @@ import co.edu.unbosque.shopflow.facturacion.colombia.FabricaColombia;
 import co.edu.unbosque.shopflow.notificaciones.BandejaNotificaciones;
 import co.edu.unbosque.shopflow.notificaciones.NotificadorEmail;
 import co.edu.unbosque.shopflow.notificaciones.NotificadorSms;
+import co.edu.unbosque.shopflow.pagos.PasarelasDisponibles;
+import co.edu.unbosque.shopflow.pagos.ResultadoPago;
 import co.edu.unbosque.shopflow.pedidos.PedidoCreadoResponse;
 import co.edu.unbosque.shopflow.pedidos.PedidoRequest;
 import co.edu.unbosque.shopflow.pedidos.PedidoService;
@@ -25,8 +28,10 @@ class PedidoServiceNotificacionesTest {
 	@BeforeEach
 	void preparar() {
 		bandeja = new BandejaNotificaciones();
+		PasarelasDisponibles pasarelas = new PasarelasDisponibles(
+				Map.of("FALSA", (monto, referencia) -> ResultadoPago.aprobado("AUT-1")));
 		servicio = new PedidoService(new CatalogoFalso(), new ServicioFacturacion(List.of(new FabricaColombia())),
-				List.of(new NotificadorEmail(bandeja), new NotificadorSms(bandeja)));
+				pasarelas, List.of(new NotificadorEmail(bandeja), new NotificadorSms(bandeja)));
 	}
 
 	private PedidoRequest pedido(String contacto, String canal) {
@@ -67,5 +72,15 @@ class PedidoServiceNotificacionesTest {
 		servicio.notificarPagoAprobado(creado.pedido(), creado.comprobante().total());
 
 		assertEquals("EMAIL", bandeja.todas().get(0).canal());
+	}
+
+	@Test
+	void pagarUnPedidoNotificaAlClientePorSuCanal() {
+		PedidoCreadoResponse creado = servicio.crear(pedido("3001234567", "SMS"));
+
+		servicio.pagar(creado.pedido().getId(), "FALSA");
+
+		assertEquals(1, bandeja.todas().size());
+		assertEquals("SMS", bandeja.todas().get(0).canal());
 	}
 }
