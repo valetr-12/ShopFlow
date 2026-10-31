@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -43,6 +44,10 @@ public class PedidoService {
 
 		if (request == null) {
 			throw new IllegalArgumentException("Los datos del pedido son obligatorios");
+		}
+
+		if (request.canalNotificacion() != null) {
+			notificadorPara(request.canalNotificacion());
 		}
 
 		List<ItemPedido> items = new ArrayList<>();
@@ -97,6 +102,24 @@ public class PedidoService {
 		return pedido;
 	}
 
+	public void notificarPagoAprobado(Pedido pedido, BigDecimal totalPagado) {
+
+		notificadorPara(pedido.getCanalNotificacion()).notificarPagoAprobado(pedido.getContacto(), pedido.getId(),
+				totalPagado);
+	}
+
+	private Notificador notificadorPara(String canal) {
+
+		String clave = canal == null ? "" : canal.trim().toUpperCase(Locale.ROOT);
+		Notificador notificador = notificadores.get(clave);
+
+		if (notificador == null) {
+			throw new IllegalArgumentException("Canal de notificación no soportado: " + canal);
+		}
+
+		return notificador;
+	}
+}
 	public PagoResponse pagar(String pedidoId, String proveedor) {
 
 		buscar(pedidoId);                                             
@@ -122,3 +145,4 @@ public class PedidoService {
 		return pago;
 	}
 }
+
