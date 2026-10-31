@@ -1,6 +1,9 @@
+# Escenario 5 - Pedido de México con RFC GODE561231GR8
+# Esperado: 201 con CFDI (SAT) e IVA 16 %
+
 HTTP/1.1 201 
 Content-Type: application/json
 Transfer-Encoding: chunked
-Date: Tue, 27 Oct 2026 23:32:28 GMT
+Date: Sat, 31 Oct 2026 04:36:00 GMT
 
-{"pedido":{"id":"PED-4","clienteId":"CLI-003","documentoCliente":"GODE561231GR8","pais":"MX","contacto":"vale@correo.com","items":[{"sku":"SKU-001","nombre":"Teclado mecánico","cantidad":2,"precioUnitario":85.00},{"sku":"SKU-002","nombre":"Mouse inalámbrico","cantidad":1,"precioUnitario":25.50}],"direccionEnvio":"Calle 4 #36-80, Bogota","recogerEnTienda":false,"cupon":"BOSQUE10","notaRegalo":"Buenas Tardes","envioExpress":true,"canalNotificacion":"EMAIL","subtotal":195.50,"descuento":19.5500},"comprobante":{"numero":"CFDI-bc886f43-95ea-4633-a2e3-21f11b7dcf67","pedidoId":"PED-4","pais":"MX","tipo":"Comprobante fiscal digital (CFDI)","autoridad":"SAT","identificacionCliente":"GODE561231GR8","baseImponible":175.9500,"porcentajeIva":16,"valorIva":28.15,"total":204.1000}}
+{"pedido":{"id":"PED-4","clienteId":"CLI-004","documentoCliente":"GODE561231GR8","pais":"MX","contacto":"diego.gomez@correo.mx","items":[{"sku":"SKU-001","nombre":"Teclado mecánico","cantidad":1,"precioUnitario":85.00}],"direccionEnvio":"Av. Reforma 222, CDMX","recogerEnTienda":false,"cupon":null,"notaRegalo":null,"envioExpress":false,"canalNotificacion":"EMAIL","subtotal":85.00,"descuento":0},"comprobante":{"numero":"CFDI-a271103d-a8e7-4867-8b3c-7f288d213f59","pedidoId":"PED-4","pais":"MX","tipo":"CFDI (SAT)","autoridad":"SAT","identificacionCliente":"GODE561231GR8","baseImponible":85.00,"porcentajeIva":16,"valorIva":13.60,"total":98.60}}

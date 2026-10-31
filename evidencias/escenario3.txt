@@ -1,6 +1,9 @@
+# Escenario 3 - Pedido de Colombia válido (ejemplo B.2)
+# Esperado: 201, factura DIAN, IVA 19 %, descuento del cupón
+
 HTTP/1.1 201 
 Content-Type: application/json
 Transfer-Encoding: chunked
-Date: Tue, 27 Oct 2026 23:06:26 GMT
+Date: Sat, 31 Oct 2026 04:36:00 GMT
 
-{"pedido":{"id":"PED-1","clienteId":"CLI-001","documentoCliente":"12345678","pais":"CO","contacto":"vale@correo.com","items":[{"sku":"SKU-001","nombre":"Teclado mecánico","cantidad":2,"precioUnitario":85.00},{"sku":"SKU-002","nombre":"Mouse inalámbrico","cantidad":1,"precioUnitario":25.50}],"direccionEnvio":"Calle 4 #36-80, Bogota","recogerEnTienda":false,"cupon":"BOSQUE10","notaRegalo":"Buenas Tardes","envioExpress":true,"canalNotificacion":"EMAIL","subtotal":195.50,"descuento":19.5500},"comprobante":{"numero":"DIAN-40972cbc-6eb9-40b8-85a0-42c06451f6cc","pedidoId":"PED-1","pais":"CO","tipo":"Factura electrónica (DIAN)","autoridad":"DIAN","identificacionCliente":"12345678","baseImponible":175.9500,"porcentajeIva":19,"valorIva":33.43,"total":209.3800}}
+{"pedido":{"id":"PED-1","clienteId":"CLI-001","documentoCliente":"1020304050","pais":"CO","contacto":"ana.perez@correo.com","items":[{"sku":"SKU-001","nombre":"Teclado mecánico","cantidad":1,"precioUnitario":85.00},{"sku":"SKU-002","nombre":"Mouse inalámbrico","cantidad":2,"precioUnitario":25.50}],"direccionEnvio":"Calle 134 # 9-51, Bogotá","recogerEnTienda":false,"cupon":"BOSQUE10","notaRegalo":null,"envioExpress":true,"canalNotificacion":"EMAIL","subtotal":136.00,"descuento":13.60},"comprobante":{"numero":"DIAN-b44118bf-30e9-4d38-a7a1-4daab3884bd2","pedidoId":"PED-1","pais":"CO","tipo":"Factura electrónica (DIAN)","autoridad":"DIAN","identificacionCliente":"1020304050","baseImponible":122.40,"porcentajeIva":19,"valorIva":23.26,"total":145.66}}
