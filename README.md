@@ -58,6 +58,148 @@ mvn test
 
 Todas estas reglas viven en un solo lugar: `Pedido.Builder.build()` (método privado `validar()`), que lanza `IllegalArgumentException`. Como el constructor de `Pedido` es privado y no tiene setters, **no existe un `Pedido` inválido ni a medias**. El precio de cada `ItemPedido` se toma del catálogo, no del cliente.
 
+```mermaid
+classDiagram
+direction TB
+
+class PedidoController {
+  -PedidoService pedidoService
+  +PedidoController(PedidoService)
+  +crear(PedidoRequest) ResponseEntity
+  +buscar(String) ResponseEntity
+}
+
+class PedidoService {
+  -ServicioCatalogo catalogo
+  -ServicioFacturacion servicioFacturacion
+  -Map~String, Pedido~ pedidos
+  -AtomicLong contador
+  +PedidoService(ServicioCatalogo, ServicioFacturacion)
+  +crear(PedidoRequest) PedidoCreadoResponse
+  +buscar(String) Pedido
+}
+
+class PedidoRequest {
+  <<record>>
+  +String clienteId
+  +String documentoCliente
+  +String pais
+  +String contacto
+  +List~ItemRequest~ items
+  +String direccionEnvio
+  +Boolean recogerEnTienda
+  +String cupon
+  +String notaRegalo
+  +Boolean envioExpress
+  +String canalNotificacion
+}
+
+class ItemRequest {
+  <<record>>
+  <<clase interna de PedidoRequest>>
+  +String sku
+  +int cantidad
+}
+
+class Pedido {
+  <<final>>
+  -String id
+  -String clienteId
+  -String documentoCliente
+  -String pais
+  -String contacto
+  -List~ItemPedido~ items
+  -String direccionEnvio
+  -boolean recogerEnTienda
+  -String cupon
+  -String notaRegalo
+  -boolean envioExpress
+  -String canalNotificacion
+  -BigDecimal subtotal
+  -BigDecimal descuento
+  -Pedido(Builder)
+  -calcularSubtotal() BigDecimal
+  -calcularDescuento() BigDecimal
+  +totalSinImpuestos() BigDecimal
+  +getId() String
+  +getClienteId() String
+  +getDocumentoCliente() String
+  +getPais() String
+  +getContacto() String
+  +getItems() List
+  +getDireccionEnvio() String
+  +isRecogerEnTienda() boolean
+  +getCupon() String
+  +getNotaRegalo() String
+  +isEnvioExpress() boolean
+  +getCanalNotificacion() String
+  +getSubtotal() BigDecimal
+  +getDescuento() BigDecimal
+}
+
+class PedidoBuilder {
+  <<static>>
+  <<clase interna de Pedido>>
+  -String id
+  -String clienteId
+  -String documentoCliente
+  -String pais
+  -String contacto
+  -List~ItemPedido~ items
+  -String direccionEnvio
+  -boolean recogerEnTienda
+  -String cupon
+  -String notaRegalo
+  -boolean envioExpress
+  -String canalNotificacion
+  +Builder(String, String, String, String, String, List)
+  +direccionEnvio(String) Builder
+  +recogerEnTienda(Boolean) Builder
+  +cupon(String) Builder
+  +notaRegalo(String) Builder
+  +envioExpress(Boolean) Builder
+  +canalNotificacion(String) Builder
+  +build() Pedido
+  -validar() void
+  -validarTexto(String, String) void
+}
+
+class ItemPedido {
+  <<record>>
+  +String sku
+  +String nombre
+  +int cantidad
+  +BigDecimal precioUnitario
+  +ItemPedido(String, String, int, BigDecimal)
+  +subtotal() BigDecimal
+}
+
+class PedidoCreadoResponse {
+  <<record>>
+  +Pedido pedido
+  +Comprobante comprobante
+  +PedidoCreadoResponse(Pedido, Comprobante)
+}
+
+PedidoController --> PedidoService : utiliza
+PedidoController ..> PedidoRequest : recibe en crear()
+PedidoController ..> PedidoCreadoResponse : retorna en crear()
+PedidoController ..> Pedido : retorna en buscar()
+
+PedidoService ..> PedidoRequest : recibe datos
+PedidoService ..> PedidoBuilder : instancia y configura
+PedidoService ..> Pedido : utiliza y almacena
+PedidoService ..> ItemPedido : crea los ítems
+PedidoService ..> PedidoCreadoResponse : crea y retorna
+
+PedidoBuilder ..> Pedido : build() construye
+PedidoBuilder --> "0..*" ItemPedido : contiene lista de ítems
+
+Pedido *-- "0..*" ItemPedido : items
+PedidoRequest --> "0..*" ItemRequest : items
+PedidoCreadoResponse --> "1" Pedido : pedido
+```
+
 **Participantes GoF → clases:**
 
 | Participante GoF | Clase |
@@ -80,6 +222,177 @@ Todas estas reglas viven en un solo lugar: `Pedido.Builder.build()` (método pri
 | Perú (`PE`, reto A) | IGV 18 % | DNI (8 dígitos) o RUC (11 dígitos) | Factura electrónica (SUNAT) |
 
 Si un pedido mexicano se validara con reglas colombianas, la factura quedaría mal. Con el patrón, `ServicioFacturacion` recibe `List<FabricaFacturacion>` (inyectada por Spring), arma un mapa por país y factura **sin conocer ninguna clase concreta** y sin un `if` ni un `switch` por país. Como el cliente obtiene calculadora, validador y generador de **una sola** fábrica, las tres piezas son siempre de la misma familia.
+
+```mermaid
+classDiagram
+direction TB
+
+namespace facturacion {
+  class ServicioFacturacion {
+    -Map~String, FabricaFacturacion~ fabricas
+    +ServicioFacturacion(List~FabricaFacturacion~)
+    +facturar(Pedido) Comprobante
+  }
+
+  class FabricaFacturacion {
+    <<interface>>
+    +pais() String
+    +crearCalculadora() CalculadoraImpuestos
+    +crearValidador() ValidadorIdentificacion
+    +crearGenerador() GeneradorComprobante
+  }
+
+  class CalculadoraImpuestos {
+    <<interface>>
+    +porcentaje() BigDecimal
+    +calcular(BigDecimal) BigDecimal
+  }
+
+  class ValidadorIdentificacion {
+    <<interface>>
+    +validar(String) boolean
+  }
+
+  class GeneradorComprobante {
+    <<interface>>
+    +generar(Pedido, BigDecimal, BigDecimal, BigDecimal) Comprobante
+  }
+
+  class Comprobante {
+    <<record>>
+    +String numero
+    +String pedidoId
+    +String pais
+    +String tipo
+    +String autoridad
+    +String identificacionCliente
+    +BigDecimal baseImponible
+    +BigDecimal porcentajeIva
+    +BigDecimal valorIva
+    +BigDecimal total
+  }
+}
+
+namespace colombia {
+  class FabricaColombia {
+    +pais() String
+    +crearCalculadora() CalculadoraImpuestos
+    +crearValidador() ValidadorIdentificacion
+    +crearGenerador() GeneradorComprobante
+  }
+
+  class CalculadoraImpuestosColombia {
+    -BigDecimal PORCENTAJE
+    +porcentaje() BigDecimal
+    +calcular(BigDecimal) BigDecimal
+  }
+
+  class ValidadorIdentificacionColombia {
+    +validar(String) boolean
+  }
+
+  class GeneradorComprobanteColombia {
+    +generar(Pedido, BigDecimal, BigDecimal, BigDecimal) Comprobante
+  }
+}
+
+namespace mexico {
+  class FabricaMexico {
+    +pais() String
+    +crearCalculadora() CalculadoraImpuestos
+    +crearValidador() ValidadorIdentificacion
+    +crearGenerador() GeneradorComprobante
+  }
+
+  class CalculadoraImpuestosMexico {
+    -BigDecimal PORCENTAJE
+    +porcentaje() BigDecimal
+    +calcular(BigDecimal) BigDecimal
+  }
+
+  class ValidadorIdentificacionMexico {
+    +validar(String) boolean
+  }
+
+  class GeneradorComprobanteMexico {
+    +generar(Pedido, BigDecimal, BigDecimal, BigDecimal) Comprobante
+  }
+}
+
+namespace peru {
+  class FabricaPeru {
+    +pais() String
+    +crearCalculadora() CalculadoraImpuestos
+    +crearValidador() ValidadorIdentificacion
+    +crearGenerador() GeneradorComprobante
+  }
+
+  class CalculadoraImpuestosPeru {
+    -BigDecimal PORCENTAJE
+    +porcentaje() BigDecimal
+    +calcular(BigDecimal) BigDecimal
+  }
+
+  class ValidadorIdentificacionPeru {
+    +validar(String) boolean
+  }
+
+  class GeneradorComprobantePeru {
+    +generar(Pedido, BigDecimal, BigDecimal, BigDecimal) Comprobante
+  }
+}
+
+class Pedido {
+  <<externo>>
+  +getPais() String
+  +getDocumentoCliente() String
+  +getId() String
+  +totalSinImpuestos() BigDecimal
+}
+
+FabricaColombia ..|> FabricaFacturacion : implementa
+FabricaMexico ..|> FabricaFacturacion : implementa
+FabricaPeru ..|> FabricaFacturacion : implementa
+
+CalculadoraImpuestosColombia ..|> CalculadoraImpuestos : implementa
+CalculadoraImpuestosMexico ..|> CalculadoraImpuestos : implementa
+CalculadoraImpuestosPeru ..|> CalculadoraImpuestos : implementa
+
+ValidadorIdentificacionColombia ..|> ValidadorIdentificacion : implementa
+ValidadorIdentificacionMexico ..|> ValidadorIdentificacion : implementa
+ValidadorIdentificacionPeru ..|> ValidadorIdentificacion : implementa
+
+GeneradorComprobanteColombia ..|> GeneradorComprobante : implementa
+GeneradorComprobanteMexico ..|> GeneradorComprobante : implementa
+GeneradorComprobantePeru ..|> GeneradorComprobante : implementa
+
+ServicioFacturacion --> "0..*" FabricaFacturacion : registra fábricas
+ServicioFacturacion ..> CalculadoraImpuestos : utiliza
+ServicioFacturacion ..> ValidadorIdentificacion : utiliza
+ServicioFacturacion ..> GeneradorComprobante : utiliza
+ServicioFacturacion ..> Pedido : recibe para facturar
+ServicioFacturacion ..> Comprobante : retorna
+
+FabricaColombia ..> CalculadoraImpuestosColombia : crea
+FabricaColombia ..> ValidadorIdentificacionColombia : crea
+FabricaColombia ..> GeneradorComprobanteColombia : crea
+
+FabricaMexico ..> CalculadoraImpuestosMexico : crea
+FabricaMexico ..> ValidadorIdentificacionMexico : crea
+FabricaMexico ..> GeneradorComprobanteMexico : crea
+
+FabricaPeru ..> CalculadoraImpuestosPeru : crea
+FabricaPeru ..> ValidadorIdentificacionPeru : crea
+FabricaPeru ..> GeneradorComprobantePeru : crea
+
+GeneradorComprobanteColombia ..> Comprobante : genera
+GeneradorComprobanteMexico ..> Comprobante : genera
+GeneradorComprobantePeru ..> Comprobante : genera
+
+GeneradorComprobanteColombia ..> Pedido : consulta datos
+GeneradorComprobanteMexico ..> Pedido : consulta datos
+GeneradorComprobantePeru ..> Pedido : consulta datos
+```
 
 **Participantes GoF → clases:**
 
